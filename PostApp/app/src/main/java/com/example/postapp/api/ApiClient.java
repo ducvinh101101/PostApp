@@ -17,6 +17,8 @@ public class ApiClient {
         return databaseRetrofit.create(SupabaseApi.class);
     }
 
+
+
     public static SupabaseApi getStorageApi() {
         if (storageRetrofit == null) {
             storageRetrofit = new Retrofit.Builder()

@@ -10,11 +10,15 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.HeaderMap;
 import retrofit2.http.Headers;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 import retrofit2.http.Url;
 
 public interface SupabaseApi {
@@ -31,6 +35,18 @@ public interface SupabaseApi {
     @GET("posts")
     Call<List<Post>> getPosts();
 
+    @PATCH("posts")
+    @Headers({
+            "apikey: " + SupabaseApi.SUPABASE_KEY,
+            "Authorization: Bearer " + SupabaseApi.SUPABASE_KEY,
+            "Content-Type: application/json"
+    })
+    Call<ResponseBody> updateLike(
+            @Query("post_id") String postId,  // Dùng @Query thay vì @Path
+            @Body Map<String, Object> updateData
+    );
+
+
     @POST("posts")
     @Headers({
             "apikey: " + SupabaseApi.SUPABASE_KEY,
@@ -39,11 +55,46 @@ public interface SupabaseApi {
     })
     Call<Void> createPost(@Body Map<String, Object> post);
 
+    // Like
+    // Kiểm tra trạng thái like
+    @GET("likes")
+    @Headers({
+            "apikey: " + SupabaseApi.SUPABASE_KEY,
+            "Authorization: Bearer " + SupabaseApi.SUPABASE_KEY,
+            "Content-Type: application/json"
+    })
+    Call<List<Map<String, Object>>> checkLikeStatus(
+            @Query("post_id") String postId,
+            @Query("user_id") String userId,
+            @Query("select") String select
+    );
+
+
+    // Thêm like (POST vào bảng "likes")
+    @POST("likes")
+    @Headers({
+            "apikey: " + SupabaseApi.SUPABASE_KEY,
+            "Authorization: Bearer " + SupabaseApi.SUPABASE_KEY,
+            "Content-Type: application/json"
+    })
+    Call<ResponseBody> addLike(@Body Map<String, Object> body);
+
+    // Xóa like (DELETE từ bảng "likes" với điều kiện)
+    @DELETE
+    @Headers({
+            "apikey: " + SupabaseApi.SUPABASE_KEY,
+            "Authorization: Bearer " + SupabaseApi.SUPABASE_KEY,
+            "Content-Type: application/json",
+            "Prefer: return=minimal"
+    })
+    Call<ResponseBody> removeLike(@Url String url);
+
+
+
     @POST("comments")
     Call<Void> addComment(@Body Map<String, Object> comment);
 
     // upload file
-
     @PUT
     Call<ResponseBody> uploadFile(
             @Url String url,

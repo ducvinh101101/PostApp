@@ -164,7 +164,7 @@ public class CreatePostActivity extends AppCompatActivity {
         String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).format(new Date());
 
         Map<String, Object> newPost = new HashMap<>();
-        newPost.put("author_Id", authorId);
+        newPost.put("author_id", authorId);
         newPost.put("title", title);
         newPost.put("content", content);
         newPost.put("media_url", fileUrl);
