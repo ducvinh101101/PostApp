@@ -12,31 +12,30 @@ import java.util.List;
 
 public class SQLite extends SQLiteOpenHelper {
     private Context context;
-    public static final String DATABASE_NAME = "sinhvien.db";
+    public static final String DATABASE_NAME = "hoadonkhachsan.db";
     public static final int DATABASE_VERSION = 1;
-    public static final String TABLE_NAME = "sinhvien";
+    public static final String TABLE_NAME = "hoadonkhachsan";
     public static final String COLUMN_ID = "id";
-    public static final String COLUMN_STUDENT_ID = "student_id";
+
     public static final String COLUMN_NAME = "name";
-    public static final String COLUMN_TOAN = "toan";
-    public static final String COLUMN_LY = "ly";
-    public static final String COLUMN_HOA = "hoa";
+    public static final String COLUMN_DAY = "day";
+    public static final String COLUMN_GIA = "dongia";
+    public static final String COLUMN_SONGAYLUUTRU = "songayluutru";
 
     public SQLite(Context context) {
-        super(null, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createTable = "CREATE TABLE " + TABLE_NAME + " (" +
-                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_STUDENT_ID + " TEXT, " +
+        String query = "CREATE TABLE " + TABLE_NAME +
+                " (" + COLUMN_ID + " TEXT PRIMARY KEY, " +
                 COLUMN_NAME + " TEXT, " +
-                COLUMN_TOAN + " REAL, " +
-                COLUMN_LY + " REAL, " +
-                COLUMN_HOA + " REAL);";
-        db.execSQL(createTable);
+                COLUMN_DAY + " TEXT, " +
+                COLUMN_GIA + " INTEGER, " +
+                COLUMN_SONGAYLUUTRU + " INTEGER);";
+        db.execSQL(query);
     }
 
 
@@ -46,70 +45,101 @@ public class SQLite extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addStudent(String studentId, String name, double toan, double ly, double hoa) {
+    public void addHoaDon(String tenKhachHang, String ngayLap, int donGia, int soNgayLuuTru) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_STUDENT_ID, studentId);
-        values.put(COLUMN_NAME, name);
-        values.put(COLUMN_TOAN, toan);
-        values.put(COLUMN_LY, ly);
-        values.put(COLUMN_HOA, hoa);
+        values.put(COLUMN_ID, getNextId());
+        values.put(COLUMN_NAME, tenKhachHang);
+        values.put(COLUMN_DAY, ngayLap);
+        values.put(COLUMN_GIA, donGia);
+        values.put(COLUMN_SONGAYLUUTRU, soNgayLuuTru);
         db.insert(TABLE_NAME, null, values);
     }
-    public void updateStudent(int id, String studentId, String name, double toan, double ly, double hoa) {
+    @SuppressLint("Range")
+    public String getNextId() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT " + COLUMN_ID + " FROM " + TABLE_NAME + " ORDER BY " + COLUMN_ID + " DESC LIMIT 1";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        String lastId = "HD10";
+        if (cursor.moveToFirst()) {
+            lastId = cursor.getString(cursor.getColumnIndex(COLUMN_ID));
+        }
+        cursor.close();
+        // Tăng số lên 1
+        int num = Integer.parseInt(lastId.replace("HD", "")) + 1;
+        return "HD" + num;
+    }
+    public void updateHoaDon(String id , String name, String day, int donGia, int soNgayLuuTru) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_STUDENT_ID, studentId);
         values.put(COLUMN_NAME, name);
-        values.put(COLUMN_TOAN, toan);
-        values.put(COLUMN_LY, ly);
-        values.put(COLUMN_HOA, hoa);
-        db.update(TABLE_NAME, values, COLUMN_STUDENT_ID + "=?", new String[]{studentId});
+        values.put(COLUMN_DAY, day);
+        values.put(COLUMN_GIA, donGia);
+        values.put(COLUMN_SONGAYLUUTRU, soNgayLuuTru);
+        db.update(TABLE_NAME, values, COLUMN_ID + "=?", new String[]{id});
     }
 
-    public void deleteStudent(String studentId) {
+    public void deleteHoaDon(String studentId) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_NAME, COLUMN_ID + "=?", new String[]{studentId});
     }
 
-    public void deleteAllStudents() {
+    public void deleteAllHoaDon() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TABLE_NAME);
     }
 
     @SuppressLint("Range")
-    public SinhVien getStudent(int id) {
+    public HoaDon getHoaDon(String id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(TABLE_NAME, null, COLUMN_ID + "=?", new String[]{String.valueOf(id)}, null, null, null);
+        Cursor cursor = db.query(TABLE_NAME, null, COLUMN_ID + "=?", new String[]{id}, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
-            String studentId = cursor.getString(cursor.getColumnIndex(COLUMN_STUDENT_ID));
+            id = cursor.getString(cursor.getColumnIndex(COLUMN_ID));
             String name = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
-            double toan = cursor.getDouble(cursor.getColumnIndex(COLUMN_TOAN));
-            double ly = cursor.getDouble(cursor.getColumnIndex(COLUMN_LY));
-            double hoa = cursor.getDouble(cursor.getColumnIndex(COLUMN_HOA));
+            String day = cursor.getString(cursor.getColumnIndex(COLUMN_DAY));
+            int donGia = cursor.getInt(cursor.getColumnIndex(COLUMN_GIA));
+            int soNgayLuuTru = cursor.getInt(cursor.getColumnIndex(COLUMN_SONGAYLUUTRU));
             cursor.close();
-            return new SinhVien(id, studentId, name, toan, ly, hoa);
+            return new HoaDon(id, name, day, donGia, soNgayLuuTru);
         }
         return null;
     }
     @SuppressLint("Range")
-    public List<SinhVien> getAllStudents() {
+    public List<HoaDon> getAllStudents() {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME + " ORDER BY " + COLUMN_NAME, null);
-        List<SinhVien> sinhVienList = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+        List<HoaDon> hoaDonList = new ArrayList<>();
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                int id = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
-                String studentId = cursor.getString(cursor.getColumnIndex(COLUMN_STUDENT_ID));
+                String id = cursor.getString(cursor.getColumnIndex(COLUMN_ID));
                 String name = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
-                double toan = cursor.getDouble(cursor.getColumnIndex(COLUMN_TOAN));
-                double ly = cursor.getDouble(cursor.getColumnIndex(COLUMN_LY));
-                double hoa = cursor.getDouble(cursor.getColumnIndex(COLUMN_HOA));
-                sinhVienList.add(new SinhVien(id, studentId, name, toan, ly, hoa));
+                String day = cursor.getString(cursor.getColumnIndex(COLUMN_DAY));
+                int donGia = cursor.getInt(cursor.getColumnIndex(COLUMN_GIA));
+                int soNgayLuuTru = cursor.getInt(cursor.getColumnIndex(COLUMN_SONGAYLUUTRU));
+                hoaDonList.add(new HoaDon(id, name, day, donGia, soNgayLuuTru));
             } while (cursor.moveToNext());
             cursor.close();
         }
-        return sinhVienList;
+        return hoaDonList;
+    }
+
+    @SuppressLint("Range")
+    public List<HoaDon> getAllHoaDonSort() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME + " ORDER BY " + COLUMN_NAME, null);
+        List<HoaDon> hoaDonList = new ArrayList<>();
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                String id = cursor.getString(cursor.getColumnIndex(COLUMN_ID));
+                String name = cursor.getString(cursor.getColumnIndex(COLUMN_NAME));
+                String day = cursor.getString(cursor.getColumnIndex(COLUMN_DAY));
+                int donGia = cursor.getInt(cursor.getColumnIndex(COLUMN_GIA));
+                int soNgayLuuTru = cursor.getInt(cursor.getColumnIndex(COLUMN_SONGAYLUUTRU));
+                hoaDonList.add(new HoaDon(id, name, day, donGia, soNgayLuuTru));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return hoaDonList;
     }
 
 }
