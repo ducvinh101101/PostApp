@@ -1,6 +1,7 @@
 package com.example.khachhang;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
@@ -29,6 +30,12 @@ public class KhachHangAdapter extends ArrayAdapter<KhachHang> {
             txtSoDienThoai.setText(khachHang.getSoDienThoai());
             txtDiem.setText(khachHang.getDiemDanhGia() + " điểm");
             txtNgay.setText(String.valueOf(khachHang.getNgayDanhGia()));
+            if(khachHang.getDiemDanhGia()<4){
+                convertView.setBackgroundColor(Color.YELLOW);
+            }
+            else {
+                convertView.setBackgroundColor(Color.TRANSPARENT);
+            }
         }
         return convertView;
     }

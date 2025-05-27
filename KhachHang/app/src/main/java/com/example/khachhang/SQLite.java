@@ -2,8 +2,11 @@ package com.example.khachhang;
 
 import android.annotation.SuppressLint;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class SQLite extends SQLiteOpenHelper {
 
@@ -15,7 +18,7 @@ public class SQLite extends SQLiteOpenHelper {
     public static final String COLUMN_SO_DIEN_THOAI = "so_dien_thoai";
     public static final String COLUMN_NGAY_DANH_GIA = "ngay_danh_gia";
     public static final String COLUMN_BINH_CHON = "binh_chon";
-
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     public SQLite(android.content.Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -100,8 +103,14 @@ public class SQLite extends SQLiteOpenHelper {
                 String soDienThoai = cursor.getString(cursor.getColumnIndex(COLUMN_SO_DIEN_THOAI));
                 String ngayDanhGia = cursor.getString(cursor.getColumnIndex(COLUMN_NGAY_DANH_GIA));
                 float binhChon = cursor.getFloat(cursor.getColumnIndex(COLUMN_BINH_CHON));
-                KhachHang khachHang = new KhachHang(maKhachHang, tenKhachHang, soDienThoai, LocalDate.parse(ngayDanhGia), binhChon);
-                khachHangList.add(khachHang);
+                try {
+                    LocalDate date = LocalDate.parse(ngayDanhGia, DATE_FORMATTER);
+                    KhachHang khachHang = new KhachHang(maKhachHang, tenKhachHang, soDienThoai, date, binhChon);
+                    khachHangList.add(khachHang);
+                } catch (DateTimeParseException e) {
+                    Log.e("SQLite", "Failed to parse date: " + ngayDanhGia + " for customer: " + maKhachHang, e);
+                    // Optionally skip or handle invalid records
+                }
             }
             cursor.close();
         }
@@ -118,7 +127,13 @@ public class SQLite extends SQLiteOpenHelper {
             String ngayDanhGia = cursor.getString(cursor.getColumnIndex(COLUMN_NGAY_DANH_GIA));
             float binhChon = cursor.getFloat(cursor.getColumnIndex(COLUMN_BINH_CHON));
             cursor.close();
-            return new KhachHang(maKhachHang, tenKhachHang, soDienThoai, LocalDate.parse(ngayDanhGia), binhChon);
+            try {
+                LocalDate date = LocalDate.parse(ngayDanhGia, DATE_FORMATTER);
+                return new KhachHang(maKhachHang, tenKhachHang, soDienThoai, date, binhChon);
+            } catch (DateTimeParseException e) {
+                Log.e("SQLite", "Failed to parse date: " + ngayDanhGia + " for customer: " + maKhachHang, e);
+                return null;
+            }
         }
         return null;
     }

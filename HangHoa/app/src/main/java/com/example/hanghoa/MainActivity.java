@@ -1,7 +1,8 @@
-package com.example.khachhang;
+package com.example.hanghoa;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.View;
@@ -18,11 +19,12 @@ import androidx.core.view.WindowInsetsCompat;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private SQLite sqLite;
-    private KhachHangAdapter khachHangAdapter;
-    private List<KhachHang> khachHangList;
-    private Button buttonSort;
+
     private ListView listView;
+    private HangHoaAdapter hangHoaAdapter;
+    private List<HangHoa> hangHoaList;
+    private Button buttonSort;
+    private SQLite sqLite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,47 +36,49 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
         listView = findViewById(R.id.listView);
         buttonSort = findViewById(R.id.btnSort);
         sqLite = new SQLite(this);
 
-        if (sqLite.getAllKhachHang().isEmpty()) {
-            sqLite.addKhachHang("Nguyen Van A", "0123456789", "10/01/2005", 5);
-            sqLite.addKhachHang("Tran Thi B", "0987654321","20/12/2006" , 6);
-            sqLite.addKhachHang("Le Van C", "1234567890", "10/10/2004", 8);
-            sqLite.addKhachHang("Mai Van A", "0987654321", "10/03/2005", 2);
+        if(sqLite.getAllHangHoa().isEmpty()){
+            sqLite.addHangHoa("samsung",300000,true);
+            sqLite.addHangHoa("apple", 400000,false);
+            sqLite.addHangHoa("huawei", 200000, false);
         }
-        khachHangList = sqLite.getAllKhachHang();
-        double averageRating = calculateAverageRating(khachHangList);
 
-        View headerView = getLayoutInflater().inflate(R.layout.header, listView, false);
-        TextView tvAverageRating = headerView.findViewById(R.id.tvAverageTotal);
-        tvAverageRating.setText(String.format("%.1f", averageRating));
+        hangHoaList = sqLite.getAllHangHoa();
+        double avage = caculaterHoDon(hangHoaList);
 
-        listView.addHeaderView(headerView, null, false);
+        View header = getLayoutInflater().inflate(R.layout.header,listView,false);
+        TextView tv =header.findViewById(R.id.tvAverageTotal);
+        tv.setText(String.format("%.2f",avage));
+        listView.addHeaderView(header,null,false);
 
-        khachHangAdapter = new KhachHangAdapter(this, R.layout.item, khachHangList);
+
+        hangHoaAdapter =new HangHoaAdapter(this,R.layout.item, hangHoaList);
         buttonSort.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                khachHangList.sort((kh1, kh2) -> Double.compare(kh2.getDiemDanhGia(), kh1.getDiemDanhGia()));
-                khachHangAdapter.notifyDataSetChanged();
+                hangHoaList.sort((o1, o2) -> Double.compare(o1.getGiaBan(), o2.getGiaBan()));
+                hangHoaAdapter.notifyDataSetChanged();
             }
         });
-        listView.setAdapter(khachHangAdapter);
+
+        listView.setAdapter(hangHoaAdapter);
+
         registerForContextMenu(listView);
+
     }
 
-    private double calculateAverageRating(List<KhachHang> khachHangList) {
-        if (khachHangList.isEmpty()) {
-            return 0.0;
+    private double caculaterHoDon(List<HangHoa> hangHoaList) {
+        if(hangHoaList.isEmpty()){
+            return  0;
         }
-        double totalRating = 0.0;
-        for (KhachHang khachHang : khachHangList) {
-            totalRating += khachHang.getDiemDanhGia();
+        double total=0;
+        for (HangHoa hangHoa: hangHoaList){
+            total = total+ hangHoa.getGiaBan();
         }
-        return totalRating / khachHangList.size();
+        return total/hangHoaList.size();
     }
 
     @Override
@@ -87,22 +91,22 @@ public class MainActivity extends AppCompatActivity {
     public boolean onContextItemSelected(android.view.MenuItem item) {
         android.widget.AdapterView.AdapterContextMenuInfo info = (android.widget.AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         int position = info.position - listView.getHeaderViewsCount(); // Điều chỉnh vị trí vì có header
-        KhachHang khachHang = khachHangList.get(position); // Lấy trực tiếp từ hoaDonList
+        HangHoa hangHoa = hangHoaList.get(position); // Lấy trực tiếp từ hoaDonList
 
         int itemId = item.getItemId();
         if (itemId == R.id.menu_delete) {
             new AlertDialog.Builder(this)
                     .setTitle("Xác nhận xoá")
-                    .setMessage("Bạn có chắc chắn muốn xoá hàng hóa"+khachHang.getMaKhachHang() +" có số tiền " + khachHang.getDiemDanhGia() + " này?")
+                    .setMessage("Bạn có chắc chắn muốn xoá hàng hóa"+hangHoa.getMaHang() +" có số tiền " + hangHoa.getGiaBan() + " này?")
                     .setPositiveButton("Xoá", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            sqLite.deleteKhachHang(khachHang.getMaKhachHang());
-                            khachHangList.remove(position); // Xóa khỏi danh sách
-                            khachHangAdapter.notifyDataSetChanged(); // Cập nhật giao diện
+                            sqLite.deleteHangHoa(hangHoa.getMaHang());
+                            hangHoaList.remove(position); // Xóa khỏi danh sách
+                            hangHoaAdapter.notifyDataSetChanged(); // Cập nhật giao diện
 
                             // Cập nhật lại trung bình tổng tiền
-                            double averageTotal = calculateAverageRating(khachHangList);
+                            double averageTotal = caculaterHoDon(hangHoaList);
                             View headerView = listView.getChildAt(0); // Lấy header view
                             if (headerView != null) {
                                 TextView tvAverageTotal = headerView.findViewById(R.id.tvAverageTotal);
@@ -119,5 +123,4 @@ public class MainActivity extends AppCompatActivity {
             return super.onContextItemSelected(item);
         }
     }
-
 }
