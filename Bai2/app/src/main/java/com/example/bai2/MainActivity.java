@@ -1,8 +1,6 @@
-package com.example.khachhang;
+package com.example.bai2;
 
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.ListView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,14 +8,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
-    private SQLite sqLite;
-    private KhachHangAdapter khachHangAdapter;
-    private List<KhachHang> khachHangList;
-    private Button buttonSort;
-    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,15 +20,5 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-        listView = findViewById(R.id.listView);
-        buttonSort = findViewById(R.id.btnSort);
-        sqLite = new SQLite(this);
-
-        if (sqLite.getAllKhachHang().isEmpty()) {
-            sqLite.addKhachHang("Nguyen Van A", "0123456789", "10/01/2005", 5);
-            sqLite.addKhachHang("Tran Thi B", "0987654321","20/12/2006" , 6);
-            sqLite.addKhachHang("Le Van C", "1234567890", "", 8);
-        }
     }
 }
