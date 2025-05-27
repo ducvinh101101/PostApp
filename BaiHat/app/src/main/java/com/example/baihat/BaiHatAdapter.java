@@ -1,4 +1,4 @@
-package com.example.khachhang;
+package com.example.baihat;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -6,12 +6,11 @@ import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
-public class KhachHangAdapter extends ArrayAdapter<KhachHang> {
-
-    public KhachHangAdapter(android.content.Context context, int resource, int textViewResourceId) {
+public class BaiHatAdapter extends ArrayAdapter<BaiHat> {
+    public BaiHatAdapter(android.content.Context context, int resource, int textViewResourceId) {
         super(context, resource, textViewResourceId);
     }
 
@@ -20,29 +19,28 @@ public class KhachHangAdapter extends ArrayAdapter<KhachHang> {
         if (convertView == null) {
             convertView = android.view.View.inflate(getContext(), R.layout.item, null);
         }
-        KhachHang khachHang = getItem(position);
-        if (khachHang != null) {
+        BaiHat baiHat = getItem(position);
+        if (baiHat != null) {
             android.widget.TextView txtTenKhachHang = convertView.findViewById(R.id.textView);
             android.widget.TextView txtSoDienThoai = convertView.findViewById(R.id.textView2);
             android.widget.TextView txtDiem = convertView.findViewById(R.id.textView4);
             android.widget.TextView txtNgay = convertView.findViewById(R.id.textView3);
+            android.widget.TextView txtShare = convertView.findViewById(R.id.textView5);
 
-            txtTenKhachHang.setText(khachHang.getTenKhachHang());
-            txtSoDienThoai.setText(khachHang.getSoDienThoai());
-            txtDiem.setText(khachHang.getDiemDanhGia() + " điểm");
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            txtNgay.setText(String.valueOf(khachHang.getNgayDanhGia().format(formatter)));
-            if(khachHang.getDiemDanhGia()<4){
+            txtTenKhachHang.setText(baiHat.getTenBai());
+            txtSoDienThoai.setText(baiHat.getCaSy());
+            txtDiem.setText(String.valueOf(baiHat.diem()));
+            txtNgay.setText(String.valueOf(baiHat.getSoLike()));
+            txtShare.setText(String.valueOf(baiHat.getSoShare()));
+            if (baiHat.diem() > 160) {
                 convertView.setBackgroundColor(Color.YELLOW);
-            }
-            else {
+            } else {
                 convertView.setBackgroundColor(Color.TRANSPARENT);
             }
         }
         return convertView;
     }
-
-    public KhachHangAdapter(@NonNull Context context, int resource, @NonNull List<KhachHang> objects) {
+    public BaiHatAdapter(@NonNull Context context, int resource, @NonNull List<BaiHat> objects) {
         super(context, resource, objects);
     }
 }
