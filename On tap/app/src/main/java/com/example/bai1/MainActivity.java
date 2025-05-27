@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         dataHelper = new SQLite(this);
-        dataHelper.deleteAllHoaDon();
         if(dataHelper.getAllStudents().isEmpty()) {
             dataHelper.addHoaDon("Nguyễn Văn a", "10/10/2000", 100000, 3);
             dataHelper.addHoaDon("Nguyễn Văn b", "11/11/2001", 20, 4);
