@@ -1,0 +1,1 @@
+Nguoi_Con.erase(Nguoi_Con.begin());
